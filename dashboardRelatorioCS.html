@@ -1,0 +1,633 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diel Energia - Dashboard de Performance</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #28a745;
+            --accent-color: #ffc107;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #343a40;
+            --border-color: #e9ecef;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        header img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2.5em;
+            display: inline-block;
+        }
+
+        header p {
+            width: 100%;
+            margin-top: 10px;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .filters-panel {
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .filter-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .filters-panel select,
+        .filters-panel input[type="radio"] {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: #fff;
+            color: var(--text-color);
+            font-size: 1em;
+            min-width: 150px;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .filters-panel select:hover,
+        .filters-panel select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .filters-panel input[type="radio"] {
+            margin-right: 5px;
+            cursor: pointer;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .kpi-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .kpi-card {
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border-left: 5px solid var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .kpi-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.2em;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+        }
+
+        .kpi-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-top: 10px;
+        }
+
+        .kpi-description {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-card {
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chart-card h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        .chart-card > div {
+            width: 100%;
+            height: 400px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+            color: #6c757d;
+            font-size: 0.9em;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            header {
+                flex-direction: column;
+                padding: 15px 0;
+            }
+            header img {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            header p {
+                font-size: 1em;
+            }
+            .filters-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-group {
+                width: 100%;
+            }
+            .radio-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .kpi-cards {
+                grid-template-columns: 1fr;
+            }
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            .chart-card > div {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="https://jornaltribuna.com.br/wp-content/uploads/2022/07/gthbzbgy9jndkv98xrks.webp" alt="Diel Energia Logo">
+            <h1>Diel Energia - Dashboard de Performance</h1>
+            <p>Análise Interativa de Desempenho e Saúde Energética dos Clientes</p>
+        </header>
+
+        <section class="filters-panel">
+            <div class="filter-group">
+                <label for="segment-filter">Filtrar por Segmento:</label>
+                <select id="segment-filter">
+                    <option value="all">Todos os Segmentos</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="client-filter">Filtrar por Cliente:</label>
+                <select id="client-filter">
+                    <option value="all">Todos os Clientes</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Dados Referentes ao:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="month-select" value="m1" checked> Mês 1 (Mai/2025)</label>
+                    <label><input type="radio" name="month-select" value="m2"> Mês 2 (Jun/2025)</label>
+                </div>
+            </div>
+        </section>
+
+        <section class="kpi-cards" id="kpi-cards-container">
+        </section>
+
+        <section class="chart-grid">
+            <div class="chart-card">
+                <h3>Saving Energético - Comparativo Mês 1 vs Mês 2</h3>
+                <div id="savingChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>Saúde das Máquinas - Comparativo Mês 1 vs Mês 2</h3>
+                <div id="machineHealthChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>Taxa de Disponibilidade (Internet) - Comparativo Mês 1 vs Mês 2</h3>
+                <div id="availabilityChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>Funcionamento Correto ON/OFF - Comparativo Mês 1 vs Mês 2</h3>
+                <div id="correctOpChart"></div>
+            </div>
+             <div class="chart-card">
+                <h3>Unidades com Programação Ativa - Comparativo Mês 1 vs Mês 2</h3>
+                <div id="unitsProgrammedChart"></div>
+            </div>
+             <div class="chart-card">
+                <h3>Relação Saving vs Funcionamento Correto (Mês Atual)</h3>
+                <div id="savingCorrectOpScatter"></div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Diel Energia. Dashboard desenvolvido por AI. Dados referem-se a Maio/Junho de 2025.</p>
+    </footer>
+
+    <script>
+        const csvData = `Cliente_txt;Cliente;Segmento;Saving - Mês 1;Saving - Mês 2;Unidade com Programação - Mês 1;Unidade com Programação - Mês 2;Funcionamento Correto ON/OFF - Mês 1;Funcionamento Correto ON/OFF - Mês 2;Saúde das Máquinas - Mês 1;Saúde das Máquinas - Mês 2;Tx de disponibilidade (ajustado) - Mês 1;Tx de disponibilidade (ajustado) - Mês 2
+Santander;SANTANDER;Banco;0,2;0,1;0,99;0,99;0,89;0,98;0,5;0,53;0,8121;0,7294
+Banco do Brasil;BANCO DO BRASIL;Banco;0,2;0,3;0,98;0,98;0,95;0,96;0,64;0,61;0,8642;0,7474
+Bradesco;BRADESCO;Banco;0,18;0,19;0,35;0,62;0,95;0,96;0,82;0,85;0,9286;0,9250
+Autozone;AUTOZONE;Varejo;0,09;0,09;1;1;0,95;0,98;0,6;0,64;0,9474;0,9132
+C&A;C&A;Varejo;0,02;0,05;0,97;0,96;0,95;0,96;0,55;0,57;0,9618;0,9267
+Casas Bahia;CASAS BAHIA;Varejo;0,21;0,25;1;1;0,93;0,95;0,63;0,68;0,8667;0,8478
+Cencosud;CENCOSUD BRASIL COMERCIAL LTDA;Varejo;0,29;0,31;0,96;0,93;0,93;0,95;0,41;0,44;0,92;0,7677
+DPSP;DPSP;Varejo;0,05;0,08;0,98;0,98;0,98;0,98;0,82;0,72;0,9293;0,7882
+Drogaria Globo;DROGARIA GLOBO;Varejo;N/A;N/A;1;1;0,71;0,7;0,52;0,46;0,6279;0,6841
+Grupo Jelta;GRUPO JELTA;Varejo;0,01;0,03;1;1;0,92;0,92;0,69;0,73;0,9256;0,8904
+Grupo SBF;GRUPO SBF;Varejo;0,09;0,11;1;1;0,96;0,92;0,72;0,8;0,9455;0,9247
+Indiana;INDIANA;Varejo;N/A;N/A;0,98;0,98;0,87;0,87;0,67;0,62;0,6308;0,6746
+Mobly;MOBLY;Varejo;0,29;0,2;1;1;0,95;0,98;0,5;0,59;0,8889;0,9044
+Petz;PETZ;Varejo;0,08;0,1;0,99;0,99;0,96;0,97;0,66;0,65;0,9314;0,8513
+`;
+
+        let originalData = [];
+        let filteredData = [];
+        let currentMonth = 'm1';
+
+        const clientFilter = document.getElementById('client-filter');
+        const segmentFilter = document.getElementById('segment-filter');
+        const monthSelectors = document.querySelectorAll('input[name="month-select"]');
+        const kpiCardsContainer = document.getElementById('kpi-cards-container');
+
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n').filter(line => line.trim() !== '' && !line.startsWith(';-;-;-'));
+            const headers = lines[0].split(';');
+
+            const headerMap = {
+                'Cliente_txt': 'client_txt',
+                'Cliente': 'client',
+                'Segmento': 'segment',
+                'Saving - Mês 1': 'saving_m1',
+                'Saving - Mês 2': 'saving_m2',
+                'Unidade com Programação - Mês 1': 'units_programmed_m1',
+                'Unidade com Programação - Mês 2': 'units_programmed_m2',
+                'Funcionamento Correto ON/OFF - Mês 1': 'correct_op_m1',
+                'Funcionamento Correto ON/OFF - Mês 2': 'correct_op_m2',
+                'Saúde das Máquinas - Mês 1': 'machine_health_m1',
+                'Saúde das Máquinas - Mês 2': 'machine_health_m2',
+                'Tx de disponibilidade (ajustado) - Mês 1': 'availability_m1',
+                'Tx de disponibilidade (ajustado) - Mês 2': 'availability_m2'
+            };
+
+            return lines.slice(1).map(line => {
+                const values = line.split(';');
+                let obj = {};
+                headers.forEach((header, i) => {
+                    const key = headerMap[header.trim()];
+                    let value = values[i] ? values[i].trim() : '';
+
+                    if (value === 'N/A' || value === '#CALC!' || value === '') {
+                        obj[key] = null;
+                    } else if (['saving_m1', 'saving_m2', 'units_programmed_m1', 'units_programmed_m2',
+                               'correct_op_m1', 'correct_op_m2', 'machine_health_m1', 'machine_health_m2',
+                               'availability_m1', 'availability_m2'].includes(key)) {
+                        obj[key] = parseFloat(value.replace(',', '.'));
+                    } else {
+                        obj[key] = value;
+                    }
+                });
+                return obj;
+            }).filter(d => d.client);
+        }
+
+        originalData = parseCSV(csvData);
+        filteredData = [...originalData];
+
+        function populateFilters() {
+            const segments = [...new Set(originalData.map(d => d.segment))].filter(Boolean).sort();
+            segments.forEach(segment => {
+                const option = document.createElement('option');
+                option.value = segment;
+                option.textContent = segment;
+                segmentFilter.appendChild(option);
+            });
+
+            populateClientFilterOptions(originalData);
+        }
+
+        function populateClientFilterOptions(dataToFilterClients) {
+            clientFilter.innerHTML = '<option value="all">Todos os Clientes</option>';
+            const clients = [...new Set(dataToFilterClients.map(d => d.client))].filter(Boolean).sort();
+            clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client;
+                option.textContent = client;
+                clientFilter.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            let currentFilteredData = [...originalData];
+
+            const selectedSegment = segmentFilter.value;
+            if (selectedSegment !== 'all') {
+                currentFilteredData = currentFilteredData.filter(d => d.segment === selectedSegment);
+            }
+
+            const selectedClient = clientFilter.value;
+            if (selectedClient !== 'all') {
+                currentFilteredData = currentFilteredData.filter(d => d.client === selectedClient);
+            }
+
+            filteredData = currentFilteredData;
+            updateDashboard();
+        }
+
+        function updateKPICards() {
+            const monthSuffix = currentMonth === 'm1' ? '_m1' : '_m2';
+            const savingKey = `saving${monthSuffix}`;
+            const unitsProgrammedKey = `units_programmed${monthSuffix}`;
+            const correctOpKey = `correct_op${monthSuffix}`;
+            const machineHealthKey = `machine_health${monthSuffix}`;
+            const availabilityKey = `availability${monthSuffix}`;
+
+            const getAverage = (key) => {
+                const validValues = filteredData.map(d => d[key]).filter(value => value !== null && !isNaN(value));
+                if (validValues.length === 0) return null;
+                const sum = validValues.reduce((acc, val) => acc + val, 0);
+                return (sum / validValues.length);
+            };
+
+            const formatValue = (value, isPercentage = true) => {
+                if (value === null) return 'N/A';
+                return isPercentage ? `${(value * 100).toFixed(2)}%` : value.toFixed(2);
+            };
+            
+            const avgSaving = getAverage(savingKey);
+            const avgUnitsProgrammed = getAverage(unitsProgrammedKey);
+            const avgCorrectOp = getAverage(correctOpKey);
+            const avgMachineHealth = getAverage(machineHealthKey);
+            const avgAvailability = getAverage(availabilityKey);
+
+            kpiCardsContainer.innerHTML = `
+                <div class="kpi-card">
+                    <h3>Saving Energético</h3>
+                    <div class="kpi-value">${formatValue(avgSaving)}</div>
+                    <div class="kpi-description">Média de Saving</div>
+                </div>
+                <div class="kpi-card">
+                    <h3>Unidades com Programação</h3>
+                    <div class="kpi-value">${formatValue(avgUnitsProgrammed)}</div>
+                    <div class="kpi-description">Média de Unidades Ativas</div>
+                </div>
+                <div class="kpi-card">
+                    <h3>Funcionamento Correto ON/OFF</h3>
+                    <div class="kpi-value">${formatValue(avgCorrectOp)}</div>
+                    <div class="kpi-description">Média de Obediência à Programação</div>
+                </div>
+                <div class="kpi-card">
+                    <h3>Saúde das Máquinas</h3>
+                    <div class="kpi-value">${formatValue(avgMachineHealth)}</div>
+                    <div class="kpi-description">Média de Saúde do Parque de Refrigeração</div>
+                </div>
+                <div class="kpi-card">
+                    <h3>Disponibilidade de Rede</h3>
+                    <div class="kpi-value">${formatValue(avgAvailability)}</div>
+                    <div class="kpi-description">Média de Sinal de Rede dos Dispositivos</div>
+                </div>
+            `;
+        }
+
+        function plotComparativeBarChart(elementId, title, yAxisTitle, keyM1, keyM2) {
+            const clients = filteredData.map(d => d.client);
+            const valM1 = filteredData.map(d => d[keyM1] !== null ? d[keyM1] * 100 : null);
+            const valM2 = filteredData.map(d => d[keyM2] !== null ? d[keyM2] * 100 : null);
+
+            const trace1 = {
+                x: clients,
+                y: valM1,
+                name: 'Mês 1 (Mai/2025)',
+                type: 'bar',
+                marker: { color: '#0056b3' }
+            };
+
+            const trace2 = {
+                x: clients,
+                y: valM2,
+                name: 'Mês 2 (Jun/2025)',
+                type: 'bar',
+                marker: { color: '#28a745' }
+            };
+
+            const layout = {
+                barmode: 'group',
+                height: 400,
+                margin: { l: 60, r: 20, t: 30, b: 80 },
+                xaxis: { title: 'Cliente', tickangle: -45, automargin: true },
+                yaxis: { title: yAxisTitle, range: [0, 100] },
+                hovermode: 'closest',
+                showlegend: true,
+                legend: { x: 0.01, y: 0.99, xanchor: 'left', yanchor: 'top' },
+                title: false
+            };
+
+            Plotly.newPlot(elementId, [trace1, trace2], layout, { responsive: true, displayModeBar: false });
+        }
+
+        function plotSavingCorrectOpScatter() {
+            const savingKey = `saving_${currentMonth}`;
+            const correctOpKey = `correct_op_${currentMonth}`;
+
+            const validData = filteredData.filter(d => d[savingKey] !== null && d[correctOpKey] !== null);
+
+            const xValues = validData.map(d => d[correctOpKey] * 100);
+            const yValues = validData.map(d => d[savingKey] * 100);
+            
+            const uniqueSegments = [...new Set(validData.map(d => d.segment))].sort();
+            const segmentColors = {};
+            const plotlyColors = [
+                '#0056b3',
+                '#28a745',
+                '#ffc107',
+                '#dc3545',
+                '#6c757d',
+                '#17a2b8',
+                '#6f42c1',
+                '#fd7e14'
+            ];
+            uniqueSegments.forEach((segment, index) => {
+                segmentColors[segment] = plotlyColors[index % plotlyColors.length];
+            });
+
+            const traces = [];
+            uniqueSegments.forEach(segment => {
+                const segmentData = validData.filter(d => d.segment === segment);
+                traces.push({
+                    x: segmentData.map(d => d[correctOpKey] * 100),
+                    y: segmentData.map(d => d[savingKey] * 100),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: segment,
+                    text: segmentData.map(d => `Cliente: ${d.client}<br>Segmento: ${d.segment}<br>Funcionamento Correto: ${(d[correctOpKey] * 100).toFixed(2)}%<br>Saving: ${(d[savingKey] * 100).toFixed(2)}%`),
+                    hoverinfo: 'text',
+                    marker: {
+                        size: 12,
+                        color: segmentColors[segment],
+                        opacity: 0.8,
+                        line: {
+                            color: 'white',
+                            width: 1
+                        }
+                    }
+                });
+            });
+
+            const layout = {
+                height: 400,
+                margin: { l: 60, r: 20, t: 30, b: 80 },
+                xaxis: { title: `Funcionamento Correto ON/OFF (%) - ${currentMonth === 'm1' ? 'Mai/2025' : 'Jun/2025'}`, range: [0, 100] },
+                yaxis: { title: `Saving Energético (%) - ${currentMonth === 'm1' ? 'Mai/2025' : 'Jun/2025'}`, range: [0, 100] },
+                hovermode: 'closest',
+                title: false,
+                showlegend: true
+            };
+
+            Plotly.newPlot('savingCorrectOpScatter', traces, layout, { responsive: true, displayModeBar: false });
+        }
+
+        function updateDashboard() {
+            updateKPICards();
+            plotComparativeBarChart('savingChart', 'Saving Energético', 'Saving (%)', 'saving_m1', 'saving_m2');
+            plotComparativeBarChart('machineHealthChart', 'Saúde das Máquinas', 'Saúde das Máquinas (%)', 'machine_health_m1', 'machine_m2');
+            plotComparativeBarChart('availabilityChart', 'Taxa de Disponibilidade', 'Disponibilidade de Rede (%)', 'availability_m1', 'availability_m2');
+            plotComparativeBarChart('correctOpChart', 'Funcionamento Correto ON/OFF', 'Funcionamento Correto ON/OFF (%)', 'correct_op_m1', 'correct_op_m2');
+            plotComparativeBarChart('unitsProgrammedChart', 'Unidades com Programação Ativa', 'Unidades com Programação (%)', 'units_programmed_m1', 'units_programmed_m2');
+            plotSavingCorrectOpScatter();
+        }
+
+        segmentFilter.addEventListener('change', () => {
+            const selectedSegment = segmentFilter.value;
+            let clientsForSegment = originalData;
+            if (selectedSegment !== 'all') {
+                clientsForSegment = originalData.filter(d => d.segment === selectedSegment);
+            }
+            populateClientFilterOptions(clientsForSegment);
+            clientFilter.value = 'all';
+            applyFilters();
+        });
+
+        clientFilter.addEventListener('change', applyFilters);
+
+        monthSelectors.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                currentMonth = event.target.value;
+                updateDashboard();
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateFilters();
+            applyFilters();
+        });
+    </script>
+</body>
+</html>
+```

@@ -7,7 +7,7 @@ from google.genai import types
 import sys, os
 
 # The client gets the API key from the environment variable `GEMINI_API_KEY`.
-client = genai.Client(api_key="AIzaSyAfVo2x1BWotQktd7Cpt2LbsT4H1H0VUGo")
+client = genai.Client(api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 def recurso(path_relativo):
     if getattr(sys, 'frozen', False):
